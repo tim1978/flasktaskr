@@ -2,6 +2,10 @@
 *.pyc
 
 env/
+htmlcov/
+.coverage
+*.sublime-project
+*.sublime-workspace
 ## generic files to ignore
 *~
 *.lock
