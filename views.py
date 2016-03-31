@@ -49,6 +49,7 @@ def closed_tasks():
 def logout():
     session.pop('logged_in', None)
     session.pop('user_id', None)
+    session.pop('role', None)
     flash('Goodbye!')
     return redirect(url_for('login'))
 
@@ -62,6 +63,7 @@ def login():
             if user is not None and user.password == request.form['password']:
                 session['logged_in'] = True
                 session['user_id'] = user.id
+                session['role'] = user.role
                 flash('Welcome!')
                 return redirect(url_for('tasks'))
             else:
@@ -109,9 +111,13 @@ def new_task():
 @login_required
 def complete(task_id):
     new_id = task_id
-    db.session.query(Task).filter_by(task_id=new_id).update({"status":"0"})
-    db.session.commit()
-    flash('The task was marked as complete.')
+    task = db.session.query(Task).filter_by(task_id=new_id)
+    if session['user_id'] == task.first().user_id or session['role'] == 'admin':
+        task.update({"status":"0"})
+        db.session.commit()
+        flash('The task is complete. Nice.')
+    else:
+        flash('You can only update tasks that belong to you.')
     return redirect(url_for('tasks'))
 
 # Delete Tasks
@@ -119,9 +125,13 @@ def complete(task_id):
 @login_required
 def delete_entry(task_id):
     new_id = task_id
-    db.session.query(Task).filter_by(task_id=new_id).delete()
-    db.session.commit()
-    flash('The task was deleted.')
+    task = db.session.query(Task).filter_by(task_id=new_id)
+    if session['user_id'] == task.first().user_id or session['role'] == 'admin':
+        task.delete()
+        db.session.commit()
+        flash('The task was deleted.')
+    else:
+        flash('You can only delete tasks that belong to you.')
     return redirect(url_for('tasks'))
 
 
