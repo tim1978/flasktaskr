@@ -6,6 +6,7 @@ htmlcov/
 .coverage
 *.sublime-project
 *.sublime-workspace
+test.db
 ## generic files to ignore
 *~
 *.lock
