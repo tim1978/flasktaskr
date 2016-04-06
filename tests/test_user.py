@@ -45,5 +45,39 @@ class Test_user(AllTests):
         response = self.register('Michael', 'mik@teletabies.com', 'Tinkiwinki', 'Tinkiwinki')
         self.assertIn(b'That username and/or email already exist.', response.data)
 
+    def test_users_cannot_see_task_modify_links_for_tasks_not_created_by_them(self):
+        self.registerAndLoginDummy()
+        self.create_task()
+        self.logout()
+        self.register('Michaela', 'mika@teletabies.com', 'Tippsy66', 'Tippsy66')
+        response=self.login('Michaela', 'Tippsy66')
+        self.assertNotIn(b'Delete', response.data)
+        self.assertNotIn(b'Mark as complete', response.data)
+
+    def test_users_can_see_task_modify_links_for_tasks_created_by_them(self):
+        self.registerAndLoginDummy()
+        self.create_task()
+        self.logout()
+        self.register('Michael', 'mik@teletabies.com', 'Tinkiwinki', 'Tinkiwinki')
+        self.login('Michael', 'Tinkiwinki')
+        response=self.create_task()
+        self.assertIn(b'complete/2/', response.data)
+        self.assertIn(b'delete/2/', response.data)
+
+    def test_admin_users_can_see_task_modify_links_for_all_tasks(self):
+        self.registerAndLoginDummy()
+        self.create_task()
+        self.logout()
+        self.create_admin_user()
+        self.login('Superman', 'LuiseLane')
+        response=self.create_task()
+        self.assertIn(b'complete/1/', response.data)
+        self.assertIn(b'delete/1/', response.data)
+        self.assertIn(b'complete/2/', response.data)
+        self.assertIn(b'delete/2/', response.data)
+
+
+
+
 if __name__ == '__main__':
         unittest.main()    
